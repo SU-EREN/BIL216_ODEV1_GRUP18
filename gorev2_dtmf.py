@@ -30,22 +30,31 @@ dtmf_freq = {
 
 def play_tone(key):
     f1, f2 = dtmf_freq[key]
-    
-    # Sinyal üretimi
-    signal = np.sin(2*np.pi*f1*t) + np.sin(2*np.pi*f2*t)
-    
-    # Normalizasyon
-    signal = signal / 2
-    
-    # Çal
+    signal = (np.sin(2*np.pi*f1*t) + np.sin(2*np.pi*f2*t)) / 2
     sd.play(signal, fs)
     
-    # Grafik
-    plt.figure()
-    plt.plot(t[:400], signal[:400])
+    # --- FFT HESABI (KASTETTİĞİM GRAFİK BURASI) ---
+    n = len(signal)
+    freqs = np.fft.rfftfreq(n, d=1/fs)
+    spectrum = np.abs(np.fft.rfft(signal))
+
+    plt.figure(figsize=(10, 4))
+    
+    # 1. Zaman Domaini (Şu an raporda olan)
+    plt.subplot(1, 2, 1)
+    plt.plot(t[:200], signal[:200]) 
     plt.title(f"{key} Tuşu - Zaman Domaini")
-    plt.xlabel("Zaman (s)")
-    plt.ylabel("Genlik")
+    plt.grid(True)
+
+    # 2. Frekans Domaini (Rapora eklemen gereken FFT)
+    plt.subplot(1, 2, 2)
+    plt.plot(freqs, spectrum)
+    plt.xlim(500, 2000) # Tuşların frekans aralığına zoom yapar
+    plt.title(f"{key} Tuşu - FFT (Spektrum)")
+    plt.xlabel("Frekans (Hz)")
+    plt.grid(True)
+
+    plt.tight_layout()
     plt.show()
 
 # GUI oluşturma
@@ -66,3 +75,4 @@ for r, row in enumerate(keys):
         button.grid(row=r, column=c)
 
 root.mainloop()
+
